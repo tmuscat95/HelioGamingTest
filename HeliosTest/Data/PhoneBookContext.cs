@@ -22,6 +22,14 @@ namespace PhoneBook.Data
         public virtual DbSet<Company> Companies { get; set; }
         public virtual DbSet<Person> People { get; set; }
 
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            if (!optionsBuilder.IsConfigured)
+            {
+               optionsBuilder.UseSqlServer("Data Source=LOCALHOST\\SQLEXPRESS;Initial Catalog=PhoneBook;Integrated Security=True");
+            }
+        }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Company>(entity =>

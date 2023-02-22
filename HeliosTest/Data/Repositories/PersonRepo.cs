@@ -75,20 +75,20 @@ namespace PhoneBook.Data.Repositories
         public async Task<List<Person>> Search(string keyword)
         {
             keyword = keyword.ToLower().Trim();
-            var matches = await (from p in phoneBookContext.People.Include("Company")
-                                 where p.Address.ToLower().Contains(keyword) || p.PhoneNumber.ToLower().Contains(keyword) || p.FullName.ToLower().Contains(keyword) || (p.Company != null && p.Company.Name.ToLower().Contains(keyword))
+            var matches = await (from p in phoneBookContext.People.Include("CompanyNameNavigation")
+                                 where p.Address.ToLower().Contains(keyword) || p.PhoneNumber.ToLower().Contains(keyword) || p.FullName.ToLower().Contains(keyword) || (p.CompanyName != null && p.CompanyNameNavigation.CompanyName.ToLower().Contains(keyword))
                                  select p).ToListAsync();
             return matches;
         }
 
         public async Task<List<Person>> GetAll()
         {
-            return await phoneBookContext.People.Include("Company").Select(p => p).ToListAsync();
+            return await phoneBookContext.People.Include("CompanyNameNavigation").Select(p => p).ToListAsync();
         }
 
         public async Task<Person> GetProfile(int id)
         {
-            var person = await phoneBookContext.People.Include("Company").Where(c=> c.Id == id).FirstOrDefaultAsync();
+            var person = await phoneBookContext.People.Include("CompanyNameNavigation").Where(c=> c.Id == id).FirstOrDefaultAsync();
             if (person == null)
             {
                 throw new RepoException(StatusCodes.Status404NotFound, $"Person with ID {id} not found.");
@@ -106,7 +106,7 @@ namespace PhoneBook.Data.Repositories
             var maxID = await phoneBookContext.People.MaxAsync(p => p.Id);
 
             var randomId = (new Random()).Next(maxID);
-            return await phoneBookContext.People.Include("Company").Where(p => p.Id == randomId).FirstAsync();
+            return await phoneBookContext.People.Include("CompanyNameNavigation").Where(p => p.Id == randomId).FirstAsync();
         }
     }
 }

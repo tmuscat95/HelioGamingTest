@@ -7,7 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllersWithViews().AddNewtonsoftJson(x => x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
-builder.Services.AddDbContext<PhoneBookContext>(opt => opt.UseInMemoryDatabase("PhoneBookDb"));
+builder.Services.AddDbContext<PhoneBookContext>(opt => opt.UseSqlServer("Data Source=LOCALHOST\\SQLEXPRESS;Initial Catalog=PhoneBook;Integrated Security=True"));
 builder.Services.AddScoped<ICompanyRepo, CompanyRepo>();
 builder.Services.AddScoped<IPersonRepo , PersonRepo>();
 

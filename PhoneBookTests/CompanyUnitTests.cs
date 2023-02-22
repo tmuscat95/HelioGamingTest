@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using PhoneBook.Data;
 using PhoneBook.DTOs;
 using PhoneBook.Models;
 using System.Net.Http.Json;
@@ -102,7 +104,7 @@ namespace PhoneBookTests
         private static List<NewPersonDTO>? people;
         private static List<NewPersonDTO> createdPersons;
         private static HttpClient? client;
-
+        private static PhoneBookContext phoneBookContext;
 
         [TestInitialize()]
         public void Startup(){
@@ -120,27 +122,28 @@ namespace PhoneBookTests
         {
             factory = new WebApplicationFactory<Program>();
             client = factory!.CreateClient();
-            companies = new List<string>(new string[] { "Amazon", "Google", "Meta", "Tesla" });
-            string json = File.ReadAllText("PEOPLE_TEST_DATA.json");
-            people = JsonConvert.DeserializeObject<List<NewPersonDTO>>(json);
-            createdPersons = new List<NewPersonDTO>();
+            companies = new List<string>(new string[] { "Quatz", "Topiczoom", "Eire", "Shinra" });
+            phoneBookContext = new PhoneBookContext();
+            //string json = File.ReadAllText("PEOPLE_TEST_DATA.json");
+            //people = JsonConvert.DeserializeObject<List<NewPersonDTO>>(json);
+            //createdPersons = new List<NewPersonDTO>();
 
-            var postTasks = new List<Task>();
-            int i = 0;
-            foreach (var company in companies!)
-            {
-                people![i].CompanyName = company;
-                people![i + 1].CompanyName = company;
-                client!.PostAsJsonAsync("api/people", people![i]).Wait();
-                client!.PostAsJsonAsync("api/people", people![i+1]).Wait();
+            //var postTasks = new List<Task>();
+            //int i = 0;
+            //foreach (var company in companies!)
+            //{
+            //    people![i].CompanyName = company;
+            //    people![i + 1].CompanyName = company;
+            //    client!.PostAsJsonAsync("api/people", people![i]).Wait();
+            //    client!.PostAsJsonAsync("api/people", people![i+1]).Wait();
 
-                var companyPeople = new List<NewPersonDTO>(new NewPersonDTO[] { people![i], people![i + 1] });
-                i += 2;
-                postTasks.Add(client.PostAsJsonAsync("api/companies", new NewCompanyDTO { CompanyName = company, RegistrationDate = DateTime.Today.ToString(), people = companyPeople }));
-                createdPersons.AddRange(companyPeople.ToArray());
-            }
+            //    var companyPeople = new List<NewPersonDTO>(new NewPersonDTO[] { people![i], people![i + 1] });
+            //    i += 2;
+            //    postTasks.Add(client.PostAsJsonAsync("api/companies", new NewCompanyDTO { CompanyName = company, RegistrationDate = DateTime.Today.ToString(), people = companyPeople }));
+            //    createdPersons.AddRange(companyPeople.ToArray());
+            //}
 
-            Task.WaitAll(postTasks.ToArray());
+            //Task.WaitAll(postTasks.ToArray());
         }
 
         [ClassCleanup]
@@ -148,6 +151,7 @@ namespace PhoneBookTests
         {
             factory!.Dispose();
             client!.Dispose();
+            phoneBookContext.Dispose();
 
         }
 
@@ -161,17 +165,23 @@ namespace PhoneBookTests
         public async Task Company_Add()
         {
 
-            var client = factory!.CreateClient();
-            var companies = await client.GetFromJsonAsync<List<Company>>("api/companies");
+            var companies = await client!.GetFromJsonAsync<List<Company>>("api/companies");
             Assert.IsNotNull(companies);
             var companiesCountBefore = companies.Count;
-            var postedDto = new NewCompanyDTO { CompanyName = CompanyUnitTests.companies!.First(), RegistrationDate = DateTime.Today.ToString() };
-            var response = await client.PostAsJsonAsync("api/companies", postedDto);
+            var companyName = $"TEST{(new Random()).Next()}";
+            var postedDto = new NewCompanyDTO { CompanyName = companyName, RegistrationDate = DateTime.Today.ToString() };
+            var response = await client!.PostAsJsonAsync("api/companies", postedDto);
             Assert.AreEqual(StatusCodes.Status201Created, ((int)response.StatusCode));
             companies = await client.GetFromJsonAsync<List<Company>>("api/companies");
             Assert.IsNotNull(companies);
             Assert.AreEqual(companies.Count - companiesCountBefore, 1);
             Assert.AreEqual(companies.Where(c => c.CompanyName == postedDto.CompanyName && c.RegistrationDate.Equals(DateTime.Parse(postedDto.RegistrationDate))).Select(c => c).ToList().Count,1);
+
+
+            //TEST error condition
+            var duplicateDto = new NewCompanyDTO { CompanyName = "Tesla", RegistrationDate = DateTime.Today.ToString() };
+            response = await client.PostAsJsonAsync("api/companies", duplicateDto);
+            Assert.AreEqual(StatusCodes.Status409Conflict, ((int)response.StatusCode));
 
         }
 
@@ -180,18 +190,15 @@ namespace PhoneBookTests
         [TestMethod]
         public async Task Company_GetAll()
         {
-            var companiesRes = await client.GetFromJsonAsync<List<Company>>("api/companies");
+            var companiesFromDb = await phoneBookContext.Companies.Select(c=>c).ToListAsync();
+            var companiesRes = await client!.GetFromJsonAsync<List<Company>>("api/companies");
             Assert.IsNotNull(companiesRes);
-            Assert.AreEqual(companiesRes.Count(), companies.Count);
+            Assert.AreEqual(companiesRes.Count(), companiesFromDb.Count());
             foreach (var company in companiesRes)
             {
-                Assert.AreEqual(company.PeopleCount, 2);
-            }
-
-            companiesRes.Sort(comparatorCompanies);
-            for (int j = 0; j < companiesRes.Count; j++)
-            {
-                Assert.AreEqual(companiesRes[j].CompanyName, companies[j]);
+                Assert.IsTrue(companiesFromDb.Exists(c => c.CompanyName == company.CompanyName && c.RegistrationDate == c.RegistrationDate));
+                var companyPeopleCountFromDb = await phoneBookContext.People.Where(p => p.CompanyName == company.CompanyName).CountAsync();
+                Assert.AreEqual(companyPeopleCountFromDb,company.PeopleCount);
             }
 
 

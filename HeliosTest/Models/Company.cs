@@ -17,6 +17,6 @@ namespace PhoneBook.Models
 
         public virtual ICollection<Person> People { get; set; }
 
-        public int PeopleCount { get { return People.Count;} }
+        public int PeopleCount { get { return People.Count; } }
     }
 }
