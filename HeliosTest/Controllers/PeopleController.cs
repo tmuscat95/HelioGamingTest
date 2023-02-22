@@ -2,7 +2,7 @@
 using PhoneBook.Data.Repositories;
 using PhoneBook.DTOs;
 using PhoneBook.Exceptions;
-using PhoneBook.Model;
+using PhoneBook.Models;
 
 namespace PhoneBook.Controllers
 {
@@ -63,7 +63,7 @@ namespace PhoneBook.Controllers
                 {
                     return NotFound($"Company {updatedPersonProfile.CompanyName} not found.");
                 }
-                await personRepo.EditProfile(new Person { Id = id, Address = updatedPersonProfile.Address, Company = company, FullName = updatedPersonProfile.FullName, PhoneNumber = updatedPersonProfile.PhoneNumber });
+                await personRepo.EditProfile(new Person { Id = id, Address = updatedPersonProfile.Address, CompanyName = company.CompanyName, FullName = updatedPersonProfile.FullName, PhoneNumber = updatedPersonProfile.PhoneNumber });
             }
             catch (RepoException ex)
             {
@@ -87,20 +87,14 @@ namespace PhoneBook.Controllers
             {
                 if (newPerson.CompanyName != string.Empty)
                 {
-                    try
-                    {
+  
                         newPersonCompany = await companyRepo.Get(newPerson.CompanyName);
-                    }
-                    catch (RepoException)
-                    {
-
-                    }
+                 
                 }
 
                 if (newPersonCompany != null)
-                    await personRepo.Add(newPerson.Id, newPerson.FullName, newPerson.PhoneNumber, newPerson.Address, newPersonCompany);
-                else
-                    await personRepo.Add(newPerson.Id, newPerson.FullName, newPerson.PhoneNumber, newPerson.Address);
+                    await personRepo.Add(newPerson.Id, newPerson.FullName, newPerson.PhoneNumber, newPerson.Address, newPersonCompany.CompanyName);
+    
             }
             catch (RepoException ex)
             {

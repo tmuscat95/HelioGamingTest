@@ -1,5 +1,5 @@
 ﻿using PhoneBook.DTOs;
-using PhoneBook.Model;
+using PhoneBook.Models;
 
 namespace PhoneBook.Data.Repositories
 {

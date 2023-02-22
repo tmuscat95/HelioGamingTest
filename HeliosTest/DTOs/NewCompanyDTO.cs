@@ -1,4 +1,4 @@
-﻿using PhoneBook.Model;
+﻿using PhoneBook.Models;
 
 namespace PhoneBook.DTOs
 {

@@ -4,7 +4,7 @@ using PhoneBook.Data;
 using PhoneBook.Data.Repositories;
 using PhoneBook.DTOs;
 using PhoneBook.Exceptions;
-using PhoneBook.Model;
+using PhoneBook.Models;
 
 namespace PhoneBook.Controllers
 {

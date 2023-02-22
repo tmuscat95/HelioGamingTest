@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PhoneBook.DTOs;
 using PhoneBook.Exceptions;
-using PhoneBook.Model;
+using PhoneBook.Models;
 
 namespace PhoneBook.Data.Repositories
 {
@@ -31,14 +31,14 @@ namespace PhoneBook.Data.Repositories
 
         public async Task Add(string companyName, DateTime registrationDate, List<NewPersonDTO> people)
         {
-            var company = await phoneBookContext.Companies.Where(c => c.Name.ToLower().Trim() == companyName.ToLower().Trim()).FirstOrDefaultAsync();
+            var company = await phoneBookContext.Companies.Where(c => c.CompanyName.ToLower().Trim() == companyName.ToLower().Trim()).FirstOrDefaultAsync();
             if (company != null)
             {
                 throw new RepoException(StatusCodes.Status409Conflict, "Company Already Exists.");
             }
             try
             {
-                await phoneBookContext.Companies.AddAsync(new Company { Name = companyName, registrationDate = registrationDate, People = people.Select(p=> new Person() {Address = p.Address , FullName = p.FullName , Id = p.Id, PhoneNumber = p.PhoneNumber }) });
+                await phoneBookContext.Companies.AddAsync(new Company { CompanyName = companyName, RegistrationDate = registrationDate });
                 await phoneBookContext.SaveChangesAsync();
             }
             catch (Exception ex)
@@ -50,7 +50,7 @@ namespace PhoneBook.Data.Repositories
         public async Task<Company?> Get(string companyName)
         {
 
-            var company = await phoneBookContext.Companies.Include("People").Where(c => c.Name.ToLower().Trim() == companyName.ToLower().Trim()).FirstOrDefaultAsync();
+            var company = await phoneBookContext.Companies.Include("People").Where(c => c.CompanyName.ToLower().Trim() == companyName.ToLower().Trim()).FirstOrDefaultAsync();
             if (company == null)
                 throw new RepoException(StatusCodes.Status404NotFound, "No company with that name exists");
             return company;
@@ -65,7 +65,7 @@ namespace PhoneBook.Data.Repositories
 
         public bool CompanyExists(string companyName)
         {
-            return phoneBookContext.Companies.Any(e => e.Name == companyName);
+            return phoneBookContext.Companies.Any(e => e.CompanyName == companyName);
         }
     }
 }

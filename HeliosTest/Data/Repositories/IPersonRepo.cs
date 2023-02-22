@@ -1,12 +1,11 @@
-﻿using PhoneBook.Model;
+﻿using PhoneBook.Models;
 
 namespace PhoneBook.Data.Repositories
 {
     public interface IPersonRepo
     {
-        public Task Add(int id, string fullName, string phoneNumber, string address, Company? company);
+        public Task Add(int id, string fullName, string phoneNumber, string address, string CompanyName);
 
-        public Task Add(int id, string fullName, string phoneNumber, string address);
         public Task<List<Person>> GetAll();
 
         public Task<List<Person>> Search(string keyword);

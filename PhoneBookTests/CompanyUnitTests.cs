@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Newtonsoft.Json;
 using PhoneBook.DTOs;
-using PhoneBook.Model;
+using PhoneBook.Models;
 using System.Net.Http.Json;
 
 namespace PhoneBookTests
@@ -81,11 +81,11 @@ namespace PhoneBookTests
                 }
                 else
                 {
-                    if (((short)x.Name.ToCharArray()[0]) > ((short)y.Name.ToCharArray()[0]))
+                    if (((short)x.CompanyName.ToCharArray()[0]) > ((short)y.CompanyName.ToCharArray()[0]))
                     {
                         return 1;
                     }
-                    else if (((short)x.Name.ToCharArray()[0]) < ((short)y.Name.ToCharArray()[0]))
+                    else if (((short)x.CompanyName.ToCharArray()[0]) < ((short)y.CompanyName.ToCharArray()[0]))
                     {
                         return -1;
                     }
@@ -171,7 +171,7 @@ namespace PhoneBookTests
             companies = await client.GetFromJsonAsync<List<Company>>("api/companies");
             Assert.IsNotNull(companies);
             Assert.AreEqual(companies.Count - companiesCountBefore, 1);
-            Assert.AreEqual(companies.Where(c => c.Name == postedDto.CompanyName && c.registrationDate.Equals(DateTime.Parse(postedDto.RegistrationDate))).Select(c => c).ToList().Count,1);
+            Assert.AreEqual(companies.Where(c => c.CompanyName == postedDto.CompanyName && c.RegistrationDate.Equals(DateTime.Parse(postedDto.RegistrationDate))).Select(c => c).ToList().Count,1);
 
         }
 
@@ -185,13 +185,13 @@ namespace PhoneBookTests
             Assert.AreEqual(companiesRes.Count(), companies.Count);
             foreach (var company in companiesRes)
             {
-                Assert.AreEqual(company.PersonCount, 2);
+                Assert.AreEqual(company.PeopleCount, 2);
             }
 
             companiesRes.Sort(comparatorCompanies);
             for (int j = 0; j < companiesRes.Count; j++)
             {
-                Assert.AreEqual(companiesRes[j].Name, companies[j]);
+                Assert.AreEqual(companiesRes[j].CompanyName, companies[j]);
             }
 
 
@@ -222,7 +222,7 @@ namespace PhoneBookTests
 
             foreach (var personDto in createdPersons!)
             {
-                var foundPersons = peopleRes.Where(p => p.Address == personDto.Address && p.FullName == personDto.FullName && p.PhoneNumber == personDto.PhoneNumber && p.Company?.Name == personDto.CompanyName).ToList();
+                var foundPersons = peopleRes.Where(p => p.Address == personDto.Address && p.FullName == personDto.FullName && p.PhoneNumber == personDto.PhoneNumber && p.CompanyName == personDto.CompanyName).ToList();
                 Assert.AreEqual(foundPersons.Count, 1);
             }
 
