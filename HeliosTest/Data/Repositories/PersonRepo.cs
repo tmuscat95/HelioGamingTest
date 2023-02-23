@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using PhoneBook.DTOs;
 using PhoneBook.Exceptions;
 using PhoneBook.Models;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace PhoneBook.Data.Repositories
 {
@@ -13,16 +15,18 @@ namespace PhoneBook.Data.Repositories
             this.phoneBookContext = phoneBookContext;
         }
 
-        public async Task Add(int id, string fullName, string phoneNumber, string address, string companyName)
+        public async Task<Person> Add(string fullName, string phoneNumber, string address, string companyName)
         {
-            if(await phoneBookContext.People.Where(p => p.Id == id).Select(p => p).FirstOrDefaultAsync() == null){
-                throw new RepoException(StatusCodes.Status409Conflict, "Person with this ID already exists.");
-            }
+            //if(await phoneBookContext.People.Where(p => p.Id == id).Select(p => p).FirstOrDefaultAsync() != null){
+            //    throw new RepoException(StatusCodes.Status409Conflict, "Person with this ID already exists.");
+            //}
 
             try
             {
-                await phoneBookContext.People.AddAsync(new Person { Id = id,FullName = fullName, Address = address, CompanyName = companyName, PhoneNumber = phoneNumber });
+                var newPerson = new Person { FullName = fullName, Address = address, CompanyName = companyName, PhoneNumber = phoneNumber };
+                await phoneBookContext.People.AddAsync(newPerson);
                 await phoneBookContext.SaveChangesAsync();
+                return newPerson;
             }
             catch (Exception ex)
             {
@@ -31,21 +35,26 @@ namespace PhoneBook.Data.Repositories
             }
         }
 
-        public async Task EditProfile(Person person)
+        public async Task EditProfile(int id, NewPersonDTO editedPersonDto)
         {
             try
             {
-                var profile = await GetProfile(person.Id);
-                profile.Address = person.Address;
-                profile.CompanyName = person.CompanyName;
-                profile.PhoneNumber = person.PhoneNumber;
-                phoneBookContext.Entry(person).State = EntityState.Modified;
+                var profile = await phoneBookContext.People.Where(c => c.Id == id).FirstOrDefaultAsync();
+                if(profile == null)
+                {
+                    throw new RepoException(StatusCodes.Status404NotFound, $"Person with ID {id} not found.");
+                }
+                profile.Address = editedPersonDto.Address;
+                profile.CompanyName = editedPersonDto.CompanyName;
+                profile.PhoneNumber = editedPersonDto.PhoneNumber;
+                profile.FullName = editedPersonDto.FullName;
+                phoneBookContext.Entry(profile).State = EntityState.Modified;
                 await phoneBookContext.SaveChangesAsync();
             }
-            catch (RepoException ex)
+            catch (RepoException)
             {
 
-                throw ex;
+                throw;
             }
             catch(Exception ex)
             {
@@ -62,9 +71,9 @@ namespace PhoneBook.Data.Repositories
                 phoneBookContext.People.Remove(person);
                 await phoneBookContext.SaveChangesAsync();
             }
-            catch (RepoException ex) {
+            catch (RepoException) {
 
-                throw ex;
+                throw;
             }
             catch (Exception ex)
             {

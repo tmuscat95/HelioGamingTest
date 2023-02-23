@@ -10,7 +10,7 @@ namespace PhoneBook.Data.Repositories
 
         Task<IEnumerable<Company>> GetAll();
 
-        Task<Company?> Get(string companyName);
+        Task<Company> Get(string companyName);
 
         public bool CompanyExists(string companyName);
 

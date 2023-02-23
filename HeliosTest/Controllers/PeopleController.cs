@@ -10,7 +10,6 @@ namespace PhoneBook.Controllers
     [ApiController]
     public class PeopleController : ControllerBase
     {
-        //private readonly PhoneBookContext _context;
         private readonly IPersonRepo personRepo;
         private readonly ICompanyRepo companyRepo;
 
@@ -34,8 +33,8 @@ namespace PhoneBook.Controllers
         {
             return Ok(await personRepo.GetRandomProfile());
         }
-        // GET: api/People/5
-        [HttpGet("{id}")]
+        // GET: api/People/search/{searchTerm}
+        [HttpGet("search/{searchTerm}")]
         public async Task<ActionResult<List<Person>>> Search(string searchTerm)
         {
             var persons = await personRepo.Search(searchTerm);
@@ -63,7 +62,7 @@ namespace PhoneBook.Controllers
                 {
                     return NotFound($"Company {updatedPersonProfile.CompanyName} not found.");
                 }
-                await personRepo.EditProfile(new Person { Id = id, Address = updatedPersonProfile.Address, CompanyName = company.CompanyName, FullName = updatedPersonProfile.FullName, PhoneNumber = updatedPersonProfile.PhoneNumber });
+                await personRepo.EditProfile(id, updatedPersonProfile);
             }
             catch (RepoException ex)
             {
@@ -77,31 +76,37 @@ namespace PhoneBook.Controllers
         // POST: api/People
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Person>> Add(NewPersonDTO newPerson)
+        public async Task<ActionResult<int>> Add(NewPersonDTO newPersonDto)
         {
-            if (newPerson.FullName == string.Empty || newPerson.FullName == string.Empty || newPerson.Address == string.Empty)
+            if (newPersonDto.FullName == string.Empty || newPersonDto.FullName == string.Empty || newPersonDto.Address == string.Empty)
                 return BadRequest();
 
-            Company? newPersonCompany = null;
             try
             {
-                if (newPerson.CompanyName != string.Empty)
-                {
-  
-                        newPersonCompany = await companyRepo.Get(newPerson.CompanyName);
-                 
-                }
-
-                if (newPersonCompany != null)
-                    await personRepo.Add(newPerson.Id, newPerson.FullName, newPerson.PhoneNumber, newPerson.Address, newPersonCompany.CompanyName);
-    
+                Company newPersonCompany = await companyRepo.Get(newPersonDto.CompanyName);
+                Person newPerson = await personRepo.Add(newPersonDto.FullName, newPersonDto.PhoneNumber, newPersonDto.Address, newPersonCompany.CompanyName);
+                return CreatedAtAction(nameof(GetPerson), nameof(PeopleController), new { id = newPerson.Id }, newPerson);
             }
             catch (RepoException ex)
             {
                 return StatusCode(ex.StatusCode, ex.Message);
             }
 
-            return CreatedAtAction("GetPerson", new { id = newPerson.FullName }, newPerson);
+
+        }
+
+        //GET: api/People/5
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Person>> GetPerson(int id)
+        {
+            try
+            {
+                return await personRepo.GetProfile(id);
+            }
+            catch (RepoException ex)
+            {
+                return StatusCode(ex.StatusCode, ex.Message);
+            }
         }
 
         // DELETE: api/People/5

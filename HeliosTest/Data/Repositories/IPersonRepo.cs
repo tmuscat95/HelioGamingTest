@@ -1,10 +1,11 @@
-﻿using PhoneBook.Models;
+﻿using PhoneBook.DTOs;
+using PhoneBook.Models;
 
 namespace PhoneBook.Data.Repositories
 {
     public interface IPersonRepo
     {
-        public Task Add(int id, string fullName, string phoneNumber, string address, string CompanyName);
+        public Task<Person> Add(string fullName, string phoneNumber, string address, string companyName);
 
         public Task<List<Person>> GetAll();
 
@@ -12,7 +13,7 @@ namespace PhoneBook.Data.Repositories
 
         public Task<Person> GetProfile(int id);
 
-        public Task EditProfile(Person person);
+        public Task EditProfile(int id, NewPersonDTO newPersonDTO);
 
         public Task RemoveProfile(int id);
 
