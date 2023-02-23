@@ -85,7 +85,7 @@ namespace PhoneBook.Data.Repositories
         {
             keyword = keyword.ToLower().Trim();
             var matches = await (from p in phoneBookContext.People.Include("CompanyNameNavigation")
-                                 where p.Address.ToLower().Contains(keyword) || p.PhoneNumber.ToLower().Contains(keyword) || p.FullName.ToLower().Contains(keyword) || (p.CompanyName != null && p.CompanyNameNavigation.CompanyName.ToLower().Contains(keyword))
+                                 where p.Address.ToLower().Contains(keyword) || p.PhoneNumber.ToLower().Contains(keyword) || p.FullName.ToLower().Contains(keyword) || (p.CompanyName.ToLower().Contains(keyword) || (p.CompanyNameNavigation.RegistrationDate != null && p.CompanyNameNavigation.RegistrationDate!.ToString()!.Contains(keyword)))
                                  select p).ToListAsync();
             return matches;
         }

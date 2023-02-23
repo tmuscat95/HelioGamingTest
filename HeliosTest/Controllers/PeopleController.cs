@@ -53,8 +53,6 @@ namespace PhoneBook.Controllers
         public async Task<IActionResult> PutPerson(int id, [FromBody] NewPersonDTO updatedPersonProfile)
         {
 
-
-
             try
             {
                 var company = await companyRepo.Get(updatedPersonProfile.CompanyName);

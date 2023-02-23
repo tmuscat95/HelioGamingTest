@@ -181,6 +181,19 @@ namespace PhoneBookTests
             Assert.AreEqual(1, searchResults.Count);
             Assert.IsTrue(ComparePersons(testPerson, searchResults.First()));
 
+            //Search By Company Name
+            searchResults = await client!.GetFromJsonAsync<List<Person>>($"api/People/search/{testPerson.Address}");
+            Assert.IsNotNull(searchResults);
+            Assert.IsTrue(searchResults.Count >= 1);
+            Assert.IsTrue(searchResults.Where(p => ComparePersons(p, testPerson)).Count() >= 1);
+
+            //Search By Company Registration Date
+            var companyRegistrationDate = await phoneBookContext.Companies.Where(c => c.CompanyName == testPerson.CompanyName).Select(c => c.RegistrationDate).FirstAsync();
+            searchResults = await client!.GetFromJsonAsync<List<Person>>($"api/People/search/{companyRegistrationDate!.Value.ToString("yyyy-MM-dd")}");
+            Assert.IsNotNull(searchResults);
+            Assert.IsTrue(searchResults.Count >= 1);
+            Assert.IsTrue(searchResults.Where(p => ComparePersons(p, testPerson)).Count() >= 1);
+
             CleanUpEntries(new List<int>() { testPerson.Id });
 
         }
