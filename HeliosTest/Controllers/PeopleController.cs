@@ -48,7 +48,6 @@ namespace PhoneBook.Controllers
         }
 
         // PUT: api/People/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutPerson(int id, [FromBody] NewPersonDTO updatedPersonProfile)
         {
@@ -72,7 +71,6 @@ namespace PhoneBook.Controllers
         }
 
         // POST: api/People
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<int>> Add(NewPersonDTO newPersonDto)
         {

@@ -2,7 +2,6 @@
 using PhoneBook.DTOs;
 using PhoneBook.Exceptions;
 using PhoneBook.Models;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace PhoneBook.Data.Repositories
 {
@@ -17,10 +16,6 @@ namespace PhoneBook.Data.Repositories
 
         public async Task<Person> Add(string fullName, string phoneNumber, string address, string companyName)
         {
-            //if(await phoneBookContext.People.Where(p => p.Id == id).Select(p => p).FirstOrDefaultAsync() != null){
-            //    throw new RepoException(StatusCodes.Status409Conflict, "Person with this ID already exists.");
-            //}
-
             try
             {
                 var newPerson = new Person { FullName = fullName, Address = address, CompanyName = companyName, PhoneNumber = phoneNumber };
@@ -56,7 +51,12 @@ namespace PhoneBook.Data.Repositories
 
                 throw;
             }
-            catch(Exception ex)
+            catch (DbUpdateConcurrencyException ex)
+            {
+
+                throw new RepoException(StatusCodes.Status409Conflict, ex.Message); ;
+            }
+            catch (Exception ex)
             {
                 throw new RepoException(StatusCodes.Status500InternalServerError, ex.Message);
 
@@ -71,9 +71,9 @@ namespace PhoneBook.Data.Repositories
                 phoneBookContext.People.Remove(person);
                 await phoneBookContext.SaveChangesAsync();
             }
-            catch (RepoException) {
+            catch (DbUpdateConcurrencyException ex) {
 
-                throw;
+                throw new RepoException(StatusCodes.Status409Conflict, ex.Message); ;
             }
             catch (Exception ex)
             {

@@ -8,12 +8,10 @@ namespace PhoneBook.Data.Repositories
     public class CompanyRepo : ICompanyRepo
     {
         private readonly PhoneBookContext phoneBookContext;
-        private readonly IPersonRepo personRepo;
 
         public CompanyRepo(PhoneBookContext phoneBookContext, IPersonRepo personRepo)
         {
             this.phoneBookContext = phoneBookContext;
-            this.personRepo = personRepo;
         }
         public async Task Add(string companyName, string registrationDate, List<NewPersonDTO> people)
         {
@@ -47,7 +45,7 @@ namespace PhoneBook.Data.Repositories
             }
         }
 
-        public async Task<Company?> Get(string companyName)
+        public async Task<Company> Get(string companyName)
         {
 
             var company = await phoneBookContext.Companies.Include("People").Where(c => c.CompanyName.ToLower().Trim() == companyName.ToLower().Trim()).FirstOrDefaultAsync();
