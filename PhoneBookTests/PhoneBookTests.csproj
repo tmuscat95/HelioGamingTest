@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\HeliosTest\PhoneBook.csproj" />
+    <ProjectReference Include="..\PhoneBook\PhoneBook.csproj" />
   </ItemGroup>
 
 </Project>
