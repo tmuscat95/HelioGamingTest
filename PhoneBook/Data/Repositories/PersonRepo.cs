@@ -112,10 +112,9 @@ namespace PhoneBook.Data.Repositories
 
         async Task<Person> IPersonRepo.GetRandomProfile()
         {
-            var maxID = await phoneBookContext.People.MaxAsync(p => p.Id);
-
-            var randomId = (new Random()).Next(maxID);
-            return await phoneBookContext.People.Include("CompanyNameNavigation").Where(p => p.Id == randomId).FirstAsync();
+            var rand = new Random();
+            return await phoneBookContext.People.OrderBy(p=>rand.Next()).Include("CompanyNameNavigation").FirstAsync();
+            
         }
     }
 }
